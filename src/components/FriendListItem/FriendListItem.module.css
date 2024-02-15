@@ -1,0 +1,11 @@
+.name {
+  margin: 0;
+}
+.online {
+  color: green;
+  margin: 0;
+}
+.offline {
+  color: red;
+  margin: 0;
+}

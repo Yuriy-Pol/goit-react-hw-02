@@ -1,25 +1,62 @@
-// import { useState } from "react";
-
-import userData from '../../userData.json';
-import friends from '../../friends.json';
-import transactions from '../../transactions.json';
-import { Profile } from '../Profile/Profile';
-import { FriendList } from '../FriendList/FriendList';
-import { TransactionHistory } from '../TransactionHistory/TransactionHistory';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import Options from '../Options/Options';
+import Feedback from '../Feedback/Feedback';
+import Notification from '../Notification/Notification';
+import Description from '../Description/Description';
 
 const App = () => {
+  const initialState = {
+    good: 0,
+    neutral: 0,
+    bad: 0,
+  };
+
+  const [feedback, setFeedback] = useState(() => {
+    const savedFeedback = JSON.parse(localStorage.getItem('feedback'));
+    return savedFeedback ? savedFeedback : initialState;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('feedback', JSON.stringify(feedback));
+  }, [feedback]);
+
+  const updateFeedback = feedbackType => {
+    setFeedback(prevFeedback => ({
+      ...prevFeedback,
+      [feedbackType]: prevFeedback[feedbackType] + 1,
+    }));
+  };
+
+  const resetFeedback = () => {
+    setFeedback(initialState);
+  };
+
+  const { good, neutral, bad } = feedback;
+  const totalFeedback = good + neutral + bad;
+  const positivePercentage = Math.round(
+    ((good + neutral) / totalFeedback) * 100
+  );
+
+  const hasFeedback = totalFeedback > 0;
+
   return (
-    <>
-      <Profile
-        name={userData.name}
-        tag={userData.tag}
-        location={userData.location}
-        image={userData.avatar}
-        stats={userData.stats}
+    <div>
+      <Description />
+      <Options
+        updateFeedback={updateFeedback}
+        resetFeedback={resetFeedback}
+        hasFeedback={hasFeedback}
       />
-      <FriendList friends={friends} />
-      <TransactionHistory items={transactions} />
-    </>
+      {hasFeedback && (
+        <Feedback
+          feedback={feedback}
+          totalFeedback={totalFeedback}
+          positivePercentage={positivePercentage}
+        />
+      )}
+      {!hasFeedback && <Notification message="No feedback yet" />}
+    </div>
   );
 };
 
